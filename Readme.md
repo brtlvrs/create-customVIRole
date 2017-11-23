@@ -1,6 +1,6 @@
 # create-CustomViRole
 
-_copyright CAM IT Solutions 2016_
+
 
 ** create-CustomViRole** is used to create custom vCenter roles.  
 When a role exists, it will be re-placed.
@@ -8,10 +8,7 @@ When a role exists, it will be re-placed.
 ### Version
 | Version | Branch |Owner|
 |---|---|---|
-|latest|[Master](https://git.camcube.nl/plugins/servlet/archive/projects/SV/repos/create-customvirole?at=Master)| Bart Lievers|
-|0.0.5|[develop/v0.0.5](https://git.camcube.nl/plugins/servlet/archive/projects/SV/repos/create-customvirole?at=develop/v0.0.5)| Bart Lievers|
-|0.1.0|[release/v0.1.0](https://git.camcube.nl/plugins/servlet/archive/projects/SV/repos/create-customvirole?at=release/v0.1.0)| Bart Lievers|
-  
+
 ### Change Log
 |Version| Change |
 |---|---|---|
