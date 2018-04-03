@@ -7,12 +7,12 @@
 
 @{
     #-- vSphere vCenter FQDN
-        vCenter="000-srv-vmvc-01.paas.camcube.nl" #-- description of param1
+        vCenter="srv-vmvw-04.itnet.local" #-- description of param1
 
     #-- vCenter roles to create
     Roles = @{
         XenDesktopRole=@{
-            Name="XenDesktopRoleDemo"
+            Name="XenDesktopRole"
             Privileges=@(
 	            "Datastore.AllocateSpace",
 	            "Datastore.Browse",

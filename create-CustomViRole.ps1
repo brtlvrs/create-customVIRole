@@ -45,140 +45,26 @@ Begin{
     } 
     $P = & $scriptpath\parameters.ps1
 
+    #-- load functions
+    import-module $scriptpath\functions\functions.psm1 #-- the module scans the functions subfolder and loads them as functions
+    #-- add code to execute during exit script. Removing functions module
+    $p.Add("cleanUpCodeOnExit",{remove-module -Name functions -Force -Confirm:$false})
+
 
 #region for Private script functions
     #-- note: place any specific function in this region
 
-    function exit-script {
-        <#
-        .DESCRIPTION
-            Clean up actions before we exit the script.
-        .PARAMETER unloadCcModule
-            [switch] Unload the CC-function module
-        .PARAMETER defaultcleanupcode
-            [scriptblock] Unique code to invoke when exiting script.
-        #>
-        [CmdletBinding()]
-        param()
-
-        #-- check why script is called and react apropiatly
-        if ($finished_normal) {
-            $msg= "Hooray.... finished without any bugs....."
-            if ($log) {$log.verbose($msg)} else {Write-Verbose $msg}
-        } else {
-            $msg= "(1) Script ended with errors."
-            if ($log) {$log.error($msg)} else {Write-Error $msg}
-        }
-
-        #-- General cleanup actions
-        #-- disconnect vCenter connections if they exist
-        if (Get-Variable -Scope global -Name DefaultVIServers -ErrorAction SilentlyContinue ) {
-            Disconnect-VIServer -server * -Confirm:$false
-        }
-        #-- Output runtime and say greetings
-        $ts_end=get-date
-        $msg="Runtime script: {0:hh}:{0:mm}:{0:ss}" -f ($ts_end- $ts_start)  
-        write-host $msg
-        read-host "The End <press Enter to close window>."
-        exit
-    }
-
-    function import-PowerCLI {
-    <#
-    .SYNOPSIS
-       Loading of all VMware modules and power snapins
-    .DESCRIPTION
-  
-    .EXAMPLE
-        One or more examples for how to use this script
-    .NOTES
-        File Name          : import-PowerCLI.ps1
-        Author             : Bart Lievers
-        Prerequisite       : <Preruiqisites like
-                             Min. PowerShell version : 2.0
-                             PS Modules and version : 
-                                PowerCLI - 6.0 R2
-        Version/GIT Tag    : 1.0.0
-        Last Edit          : BL - 3-1-2016
-        CC-release         : 
-        Copyright 2016 - CAM IT Solutions
-    #>
-    [CmdletBinding()]
-
-    Param(
-    )
-
-    Begin{
- 
-    }
-
-    Process{
-        #-- make up inventory and check PowerCLI installation
-        $RegisteredModules=Get-Module -Name vmware* -ListAvailable -ErrorAction ignore | % {$_.Name}
-        $RegisteredSnapins=get-pssnapin -Registered vmware* -ErrorAction Ignore | %{$_.name}
-        if (($RegisteredModules.Count -eq 0 ) -and ($RegisteredSnapins.count -eq 0 )) {
-            #-- PowerCLI is not installed
-            if ($log) {$log.warning("Cannot load PowerCLI, no VMware Powercli Modules and/or Snapins found.")}
-            else {
-            write-warning "Cannot load PowerCLI, no VMware Powercli Modules and/or Snapins found."}
-            #-- exit function
-            return $false
-        }
-
-        #-- load modules
-        if ($RegisteredModules) {
-            #-- make inventory of already loaded VMware modules
-            $loaded = Get-Module -Name vmware* -ErrorAction Ignore | % {$_.Name}
-            #-- make inventory of available VMware modules
-            $registered = Get-Module -Name vmware* -ListAvailable -ErrorAction Ignore | % {$_.Name}
-            #-- determine which modules needs to be loaded, and import them.
-            $notLoaded = $registered | ? {$loaded -notcontains $_}
-
-            foreach ($module in $registered) {
-                if ($loaded -notcontains $module) {
-                    Import-Module $module
-                }
-            }
-        }
-
-        #-- load Snapins
-        if ($RegisteredSnapins) {      
-            #-- Exlude loaded modules from additional snappins to load
-            $snapinList=Compare-Object -ReferenceObject $RegisteredModules -DifferenceObject $RegisteredSnapins | ?{$_.sideindicator -eq "=>"} | %{$_.inputobject}
-            #-- Make inventory of loaded VMware Snapins
-            $loaded = Get-PSSnapin -Name $snapinList -ErrorAction Ignore | % {$_.Name}
-            #-- Make inventory of VMware Snapins that are registered
-            $registered = Get-PSSnapin -Name $snapinList -Registered -ErrorAction Ignore  | % {$_.Name}
-            #-- determine which snapins needs to loaded, and import them.
-            $notLoaded = $registered | ? {$loaded -notcontains $_}
-
-            foreach ($snapin in $registered) {
-                if ($loaded -notcontains $snapin) {
-                    Add-PSSnapin $snapin
-                }
-            }
-        }
-        #-- show loaded vmware modules and snapins
-        if ($RegisteredModules) {get-module -Name vmware* | select name,version,@{N="type";E={"module"}} | ft -AutoSize}
-          if ($RegisteredSnapins) {get-pssnapin -Name vmware* | select name,version,@{N="type";E={"snapin"}} | ft -AutoSize}
-
-    }
-
-
-    End{
-
-    }
+   
 
 
 
 #endregion
 }
-}
 
 Process{
 #-- note: area to write script code.....
     import-powercli
-    if(Connect-VIServer $p.vCenter) {
+    if(connect-viserver $p.vcenter) {
         write-host "Connected to vCenter"
     }else {
         write-host "Verbinding naar vCenter mislukt."
